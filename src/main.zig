@@ -25,7 +25,8 @@ pub fn main() anyerror!void {
         const bytecount = try sock.read(buf);
         var msg = buf[0..bytecount];
 
-        var request = http.HTTPRequest.init(allocator);
-        try request.parseAndFill(msg);
+        var request = try http.HTTPRequest.parseAndFill(allocator, msg);
+        defer request.deinit();
+        std.debug.warn("got verb={}, path={}\n", request.verb, request.path);
     }
 }
