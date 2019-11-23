@@ -9,6 +9,7 @@ pub const HTTPRequest = struct {
     headers: Headers,
     verb: []const u8,
     path: []const u8,
+    body: []const u8,
 
     pub fn deinit(self: *@This()) void {
         self.headers.deinit();
@@ -19,11 +20,14 @@ pub const HTTPRequest = struct {
 
         var lines_it = mem.separate(data, "\r\n");
 
+        var body_offset: usize = 0;
+
         var first_line = lines_it.next().?;
         var first_it = mem.separate(first_line, " ");
         const verb = first_it.next() orelse return error.NotEnoughData;
         const path = first_it.next().?;
         const http = first_it.next().?;
+        body_offset += verb.len + path.len + http.len + 2;
         std.debug.warn("verb='{}' path='{}' version='{}'\n", verb, path, http);
 
         while (lines_it.next()) |header_line| {
@@ -32,21 +36,20 @@ pub const HTTPRequest = struct {
 
             var header_name = header_it.next().?;
             var header_value = header_it.next().?;
+            body_offset += header_name.len + 2 + header_value.len + 2;
 
             _ = try headers.put(header_name, header_value);
 
             std.debug.warn("header name='{}', value='{}'\n", header_name, header_value);
         }
 
-        while (lines_it.next()) |body_line| {
-            // TODO
-            std.debug.warn("body line: {}\n", body_line);
-        }
+        var body = data[body_offset..data.len];
 
         return @as(@This(), .{
             .headers = headers,
             .verb = verb,
             .path = path,
+            .body = body,
         });
     }
 };
