@@ -43,7 +43,7 @@ pub const HTTPRequest = struct {
             std.debug.warn("header name='{}', value='{}'\n", header_name, header_value);
         }
 
-        var body = data[body_offset..data.len];
+        var body = data[body_offset + 2 .. data.len - 2];
 
         return @as(@This(), .{
             .headers = headers,

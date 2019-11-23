@@ -64,6 +64,6 @@ pub fn main() anyerror!void {
 
         var request = try http.HTTPRequest.parseAndFill(allocator, msg);
         defer request.deinit();
-        std.debug.warn("got verb={}, path={}, body={}\n", request.verb, request.path, request.body);
+        std.debug.warn("got verb={}, path={}, body (len {})={}\n", request.verb, request.path, request.body.len, request.body);
     }
 }
