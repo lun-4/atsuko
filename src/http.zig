@@ -53,3 +53,34 @@ pub const HTTPRequest = struct {
         });
     }
 };
+
+/// Represents a HTTP response
+pub const HTTPResponse = struct {
+    status_code: i32,
+    headers: Headers,
+    body: ?[]const u8 = null,
+
+    pub fn init(allocator: *mem.Allocator) @This() {
+        return .{
+            .status_code = -1,
+            .headers = Headers.init(allocator),
+        };
+    }
+
+    pub fn deinit(self: *@This()) void {
+        self.headers.deinit();
+    }
+
+    pub fn write(self: *@This(), stream: var) !void {
+        try stream.print("HTTP/1.1 {} OK\r\n", self.status_code);
+        var it = self.headers.iterator();
+        while (it.next()) |kv| {
+            try stream.print("{}: {}\r\n", kv.key, kv.value);
+        }
+        try stream.print("\r\n");
+
+        if (self.body) |body| {
+            try stream.print("{}", body);
+        }
+    }
+};

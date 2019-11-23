@@ -65,5 +65,12 @@ pub fn main() anyerror!void {
         var request = try http.HTTPRequest.parseAndFill(allocator, msg);
         defer request.deinit();
         std.debug.warn("got verb={}, path={}, body (len {})={}\n", request.verb, request.path, request.body.len, request.body);
+
+        var stream = &sock.outStream().stream;
+        var response = http.HTTPResponse.init(allocator);
+        defer response.deinit();
+        response.status_code = 204;
+
+        try response.write(stream);
     }
 }
